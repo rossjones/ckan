@@ -1573,42 +1573,6 @@ RE_MD_EXTERNAL_LINK = re.compile(
 RE_MD_HTML_TAGS = re.compile('<[^><]*>')
 
 
-def html_auto_link(data):
-    '''Linkifies HTML
-
-    tag:... converted to a tag link
-    dataset:... converted to a dataset link
-    group:... converted to a group link
-    http://... converted to a link
-    '''
-
-    LINK_FNS = {
-        'tag': tag_link,
-        'group': group_link,
-        'dataset': dataset_link,
-        'package': dataset_link,
-    }
-
-    def makelink(matchobj):
-        obj = matchobj.group(1)
-        name = matchobj.group(2)
-        title = '%s:%s' % (obj, name)
-        return LINK_FNS[obj]({'name': name.strip('"'), 'title': title})
-
-    def link(matchobj):
-        return '<a href="%s" target="_blank" rel="nofollow">%s</a>' \
-            % (matchobj.group(1), matchobj.group(1))
-
-    def process(matchobj):
-        data = matchobj.group(2)
-        data = RE_MD_INTERNAL_LINK.sub(makelink, data)
-        data = RE_MD_EXTERNAL_LINK.sub(link, data)
-        return matchobj.group(1) + data
-
-    data = RE_MD_GET_INNER_HTML.sub(process, data)
-    return data
-
-
 def render_markdown(data, auto_link=True, allow_html=False):
     ''' Returns the data as rendered markdown
 
@@ -1628,8 +1592,6 @@ def render_markdown(data, auto_link=True, allow_html=False):
         data = markdown(data, safe_mode=True)
     # tags can be added by tag:... or tag:"...." and a link will be made
     # from it
-    if auto_link:
-        data = html_auto_link(data)
     return literal(data)
 
 
