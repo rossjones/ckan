@@ -16,6 +16,7 @@ from pylons.templating import cached_template, pylons_globals
 from genshi.template import MarkupTemplate
 from genshi.template.text import NewTextTemplate
 from webhelpers.html import literal
+import ckan.lib.render as render_
 
 import ckan.exceptions
 import ckan

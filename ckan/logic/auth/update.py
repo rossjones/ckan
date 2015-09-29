@@ -266,10 +266,6 @@ def dashboard_mark_activities_old(context, data_dict):
                                    data_dict)
 
 
-def send_email_notifications(context, data_dict):
-    # Only sysadmins are authorized to send email notifications.
-    return {'success': False}
-
 
 ## Modifications for rest api
 

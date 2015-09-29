@@ -1041,28 +1041,6 @@ def dashboard_mark_activities_old(context, data_dict):
         model.repo.commit()
 
 
-@logic.auth_audit_exempt
-def send_email_notifications(context, data_dict):
-    '''Send any pending activity stream notification emails to users.
-
-    You must provide a sysadmin's API key in the Authorization header of the
-    request, or call this action from the command-line via a `paster post ...`
-    command.
-
-    '''
-    # If paste.command_request is True then this function has been called
-    # by a `paster post ...` command not a real HTTP request, so skip the
-    # authorization.
-    if not request.environ.get('paste.command_request'):
-        _check_access('send_email_notifications', context, data_dict)
-
-    if not converters.asbool(
-            config.get('ckan.activity_streams_email_notifications')):
-        raise ValidationError('ckan.activity_streams_email_notifications'
-                              ' is not enabled in config')
-
-    email_notifications.get_and_send_notifications_for_all_users()
-
 
 def package_owner_org_update(context, data_dict):
     '''Update the owning organization of a dataset
