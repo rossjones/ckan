@@ -24,11 +24,6 @@ class TestUpdateConfig(h.FunctionalTestBase):
         ('CKAN_SOLR_URL', 'http://mynewsolrurl/solr'),
         ('CKAN_SITE_ID', 'my-site'),
         ('CKAN_DB', 'postgresql://mydeprectatesqlurl/'),
-        ('CKAN_SMTP_SERVER', 'mail.example.com'),
-        ('CKAN_SMTP_STARTTLS', 'True'),
-        ('CKAN_SMTP_USER', 'my_user'),
-        ('CKAN_SMTP_PASSWORD', 'password'),
-        ('CKAN_SMTP_MAIL_FROM', 'server@example.com')
     ]
 
     def _setup_env_vars(self):
@@ -59,11 +54,6 @@ class TestUpdateConfig(h.FunctionalTestBase):
         nosetools.assert_equal(config['ckan.datastore.read_url'],
                                'http://mynewdbreadurl/')
         nosetools.assert_equal(config['ckan.site_id'], 'my-site')
-        nosetools.assert_equal(config['smtp.server'], 'mail.example.com')
-        nosetools.assert_equal(config['smtp.starttls'], 'True')
-        nosetools.assert_equal(config['smtp.user'], 'my_user')
-        nosetools.assert_equal(config['smtp.password'], 'password')
-        nosetools.assert_equal(config['smtp.mail_from'], 'server@example.com')
 
     def test_update_config_db_url_precedence(self):
         '''CKAN_SQLALCHEMY_URL in the env takes precedence over CKAN_DB'''

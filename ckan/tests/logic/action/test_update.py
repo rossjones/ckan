@@ -364,11 +364,9 @@ class TestUpdate(object):
         '''The user dict that user_update returns should not include the user's
         reset key.'''
 
-        import ckan.lib.mailer
         import ckan.model
 
         user = factories.User()
-        ckan.lib.mailer.create_reset_key(ckan.model.User.get(user['id']))
 
         params = {
             'id': user['id'],

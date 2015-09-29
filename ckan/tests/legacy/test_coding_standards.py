@@ -405,7 +405,6 @@ class TestPep8(object):
         'ckan/lib/i18n.py',
         'ckan/lib/jinja_extensions.py',
         'ckan/lib/jsonp.py',
-        'ckan/lib/mailer.py',
         'ckan/lib/maintain.py',
         'ckan/lib/navl/dictization_functions.py',
         'ckan/lib/navl/validators.py',
@@ -582,7 +581,6 @@ class TestPep8(object):
         'ckan/tests/legacy/lib/test_hash.py',
         'ckan/tests/legacy/lib/test_helpers.py',
         'ckan/tests/legacy/lib/test_i18n.py',
-        'ckan/tests/legacy/lib/test_mailer.py',
         'ckan/tests/legacy/lib/test_munge.py',
         'ckan/tests/legacy/lib/test_navl.py',
         'ckan/tests/legacy/lib/test_resource_search.py',
@@ -880,7 +878,6 @@ class TestBadExceptions(object):
     NASTY_EXCEPTION_BLACKLIST_FILES = [
         'ckan/controllers/api.py',
         'ckan/controllers/user.py',
-        'ckan/lib/mailer.py',
         'ckan/logic/action/create.py',
         'ckan/logic/action/delete.py',
         'ckan/logic/action/get.py',
