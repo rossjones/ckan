@@ -16,7 +16,6 @@ assert_equals = nose.tools.assert_equals
 assert_raises = nose.tools.assert_raises
 
 
-
 class TestResourceCreate(object):
 
     @classmethod

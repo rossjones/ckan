@@ -1466,50 +1466,6 @@ class TestOrganizationListForUser(helpers.FunctionalTestBase):
         assert organizations == []
 
 
-class TestShowResourceView(object):
-
-    @classmethod
-    def setup_class(cls):
-        if not p.plugin_loaded('image_view'):
-            p.load('image_view')
-
-        helpers.reset_db()
-
-    @classmethod
-    def teardown_class(cls):
-        p.unload('image_view')
-
-    def test_resource_view_show(self):
-
-        resource = factories.Resource()
-        resource_view = {'resource_id': resource['id'],
-                         'view_type': u'image_view',
-                         'title': u'View',
-                         'description': u'A nice view',
-                         'image_url': 'url'}
-
-        new_view = helpers.call_action('resource_view_create', **resource_view)
-
-        result = helpers.call_action('resource_view_show', id=new_view['id'])
-
-        result.pop('id')
-        result.pop('package_id')
-
-        assert result == resource_view
-
-    def test_resource_view_show_id_missing(self):
-
-        nose.tools.assert_raises(
-            logic.ValidationError,
-            helpers.call_action, 'resource_view_show')
-
-    def test_resource_view_show_id_not_found(self):
-
-        nose.tools.assert_raises(
-            logic.NotFound,
-            helpers.call_action, 'resource_view_show', id='does_not_exist')
-
-
 class TestGetHelpShow(object):
 
     def test_help_show_basic(self):

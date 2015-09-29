@@ -8,4 +8,3 @@ class TestPylonsResponseCleanupMiddleware(helpers.FunctionalTestBase):
     @classmethod
     def _apply_config_changes(cls, config):
         config['ckan.use_pylons_response_cleanup_middleware'] = True
-

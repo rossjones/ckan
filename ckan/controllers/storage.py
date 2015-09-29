@@ -88,7 +88,7 @@ def authorize(method, bucket, key, user, ofs):
     Check authz for the user with a given bucket/key combo within a
     particular ofs implementation.
     """
-    if not method in ['POST', 'GET', 'PUT', 'DELETE']:
+    if method not in ['POST', 'GET', 'PUT', 'DELETE']:
         abort(400)
     if method != 'GET':
         # do not allow overwriting
@@ -102,7 +102,6 @@ def authorize(method, bucket, key, user, ofs):
         except logic.NotAuthorized:
             h.flash_error('Not authorized to upload files.')
             abort(401)
-
 
 
 class StorageAPIController(BaseController):

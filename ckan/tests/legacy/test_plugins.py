@@ -147,13 +147,6 @@ class TestPlugins(object):
             assert len(mapper_plugin.added) == 1
             assert mapper_plugin.added[0].name == 'testpkg'
 
-    def test_routes_plugin_fired(self):
-        with plugins.use_plugin('routes_plugin'):
-            routes_plugin = PluginGlobals.env_registry['pca'].plugin_registry['RoutesPlugin'].__instance__
-            assert routes_plugin.calls_made == ['before_map', 'after_map'], \
-                   routes_plugin.calls_made
-
-
     def test_action_plugin_override(self):
         status_show_original = logic.get_action('status_show')(None, {})
         with plugins.use_plugin('action_plugin'):
