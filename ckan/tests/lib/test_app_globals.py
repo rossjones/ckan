@@ -11,7 +11,3 @@ class TestGlobals(object):
         # ckan.site_description is configured but with no value.
         # Behaviour has always been to return an empty string.
         assert g.site_description == ''
-
-    def test_set_from_ini(self):
-        # ckan.template_head_end is configured in test-core.ini
-        assert g.template_head_end == '<link rel="stylesheet" href="TEST_TEMPLATE_HEAD_END.css" type="text/css">'
