@@ -191,6 +191,8 @@ def make_map():
     with SubMapper(map, controller='util') as m:
         m.connect('/i18n/strings_{lang}.js', action='i18n_js_strings')
 
+    lib_plugins.register_package_plugins(map)
+    lib_plugins.register_group_plugins(map)
 
     map.redirect('/*(url)/', '/{url}',
                  _redirect_code='301 Moved Permanently')
