@@ -11,8 +11,6 @@ import json
 import logging
 import ckan.logic as logic
 import ckan.model as model
-import ckan.include.rjsmin as rjsmin
-import ckan.include.rcssmin as rcssmin
 import ckan.plugins as p
 import sqlalchemy as sa
 import urlparse
