@@ -152,10 +152,6 @@ def user_create(context, data_dict=None):
             'create users')}
     return {'success': True}
 
-def user_invite(context, data_dict):
-    data_dict['id'] = data_dict['group_id']
-    return group_member_create(context, data_dict)
-
 def _check_group_auth(context, data_dict):
     '''Has this user got update permission for all of the given groups?
     If there is a package in the context then ignore that package's groups.
