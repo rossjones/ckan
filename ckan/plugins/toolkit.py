@@ -21,8 +21,6 @@ class _Toolkit(object):
         'c',                    # template context
         'request',              # http request object
         'render',               # template render function
-        'render_text',          # Genshi NewTextTemplate render function
-        'render_snippet',       # snippet render function
         'asbool',               # converts an object to a boolean
         'asint',                # converts an object to an integer
         'aslist',               # converts an object to a list
@@ -133,7 +131,6 @@ request body variables, cookies, the request URL, etc.
 
 '''
         t['render'] = base.render
-        t['render_text'] = base.render_text
         t['asbool'] = converters.asbool
 
         self.docstring_overrides['asbool'] = '''Convert a string from the
@@ -193,7 +190,6 @@ content type, cookies, etc.
         t['auth_disallow_anonymous_access'] = logic.auth_disallow_anonymous_access
 
         # class functions
-        t['render_snippet'] = self._render_snippet
         t['add_template_directory'] = self._add_template_directory
         t['add_public_directory'] = self._add_public_directory
         t['add_resource'] = self._add_resource
@@ -372,6 +368,8 @@ content type, cookies, etc.
     def __getattr__(self, name):
         ''' return the function/object requested '''
         if not self._toolkit:
+            print "INITIALISING!!!"
+
             self._initialize()
         if name in self._toolkit:
             return self._toolkit[name]
