@@ -86,13 +86,13 @@ class _Toolkit(object):
         import ckan.lib.cli as cli
         import ckan.lib.plugins as lib_plugins
         import ckan.common as common
-        import ckan.lib.datapreview as datapreview
         from ckan.exceptions import CkanVersionException
 
         from paste.deploy import converters
         import pylons
         import webhelpers.html.tags
 
+        from pdb import set_trace; set_trace
 
         # Allow class access to these modules
         self.__class__.ckan = ckan
@@ -135,6 +135,7 @@ request body variables, cookies, the request URL, etc.
         t['render'] = base.render
         t['render_text'] = base.render_text
         t['asbool'] = converters.asbool
+
         self.docstring_overrides['asbool'] = '''Convert a string from the
 config file into a boolean.
 

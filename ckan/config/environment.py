@@ -17,11 +17,9 @@ import ckan.model as model
 import ckan.plugins as p
 import ckan.lib.helpers as h
 import ckan.lib.app_globals as app_globals
-import ckan.lib.render as render
 import ckan.lib.search as search
 import ckan.logic as logic
 import ckan.authz as authz
-import ckan.lib.jinja_extensions as jinja_extensions
 
 from ckan.common import _, ungettext
 
@@ -138,87 +136,6 @@ def load_environment(global_conf, app_conf):
     # Initialize config with the basic options
     config.init_app(global_conf, app_conf, package='ckan', paths=paths)
 
-    #################################################################
-    #                                                               #
-    #                   HORRIBLE GENSHI HACK                        #
-    #                                                               #
-    #################################################################
-    #                                                               #
-    # Genshi does strange things to get stuff out of the template   #
-    # variables.  This stops it from handling properties in the     #
-    # correct way as it returns the property rather than the actual #
-    # value of the property.                                        #
-    #                                                               #
-    # By overriding lookup_attr() in the LookupBase class we are    #
-    # able to get the required behaviour.  Using @property allows   #
-    # us to move functionality out of templates whilst maintaining  #
-    # backwards compatability.                                      #
-    #                                                               #
-    #################################################################
-
-    '''
-    This code is based on Genshi code
-
-    Copyright © 2006-2012 Edgewall Software
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or
-    without modification, are permitted provided that the following
-    conditions are met:
-
-        Redistributions of source code must retain the above copyright
-        notice, this list of conditions and the following disclaimer.
-
-        Redistributions in binary form must reproduce the above
-        copyright notice, this list of conditions and the following
-        disclaimer in the documentation and/or other materials provided
-        with the distribution.
-
-        The name of the author may not be used to endorse or promote
-        products derived from this software without specific prior
-        written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR
-    IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-    GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-    IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
-    IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    '''
-    from genshi.template.eval import LookupBase
-
-    @classmethod
-    def genshi_lookup_attr(cls, obj, key):
-        __traceback_hide__ = True
-        try:
-            val = getattr(obj, key)
-        except AttributeError:
-            if hasattr(obj.__class__, key):
-                raise
-            else:
-                try:
-                    val = obj[key]
-                except (KeyError, TypeError):
-                    val = cls.undefined(key, owner=obj)
-        if isinstance(val, property):
-            val = val.fget()
-        return val
-
-    setattr(LookupBase, 'lookup_attr', genshi_lookup_attr)
-    del genshi_lookup_attr
-    del LookupBase
-
-    #################################################################
-    #                                                               #
-    #                       END OF GENSHI HACK                      #
-    #                                                               #
-    #################################################################
-
     # Setup the SQLAlchemy database engine
     # Suppress a couple of sqlalchemy warnings
     msgs = ['^Unicode type received non-unicode bind param value',
@@ -329,27 +246,6 @@ def update_config():
     helpers = _Helpers(h)
     config['pylons.h'] = helpers
 
-    ## redo template setup to use genshi.search_path
-    ## (so remove std template setup)
-    legacy_templates_path = os.path.join(root, 'templates_legacy')
-    jinja2_templates_path = os.path.join(root, 'templates')
-    if asbool(config.get('ckan.legacy_templates', 'no')):
-        # We want the new template path for extra snippets like the
-        # dataviewer and also for some testing stuff
-        msg = 'Support for Genshi templates is deprecated and will be removed'\
-            ' in a future release'
-        log.warn(msg)
-
-        template_paths = [legacy_templates_path, jinja2_templates_path]
-    else:
-        template_paths = [jinja2_templates_path, legacy_templates_path]
-
-    extra_template_paths = config.get('extra_template_paths', '')
-    if extra_template_paths:
-        # must be first for them to override defaults
-        template_paths = extra_template_paths.split(',') + template_paths
-    config['pylons.app_globals'].template_paths = template_paths
-
     # Translator (i18n)
     translator = Translator(pylons.translator)
 
@@ -360,29 +256,6 @@ def update_config():
     # markdown debug messages in the log, set it to the level of the
     # root logger.
     logging.getLogger("MARKDOWN").setLevel(logging.getLogger().level)
-
-    # Create the Genshi TemplateLoader
-    config['pylons.app_globals'].genshi_loader = TemplateLoader(
-        template_paths, auto_reload=True, callback=template_loaded)
-
-    # Create Jinja2 environment
-    env = jinja_extensions.Environment(
-        loader=jinja_extensions.CkanFileSystemLoader(template_paths),
-        autoescape=True,
-        extensions=['jinja2.ext.do', 'jinja2.ext.with_',
-                    jinja_extensions.SnippetExtension,
-                    jinja_extensions.CkanExtend,
-                    jinja_extensions.CkanInternationalizationExtension,
-                    jinja_extensions.LinkForExtension,
-                    jinja_extensions.ResourceExtension,
-                    jinja_extensions.UrlForStaticExtension,
-                    jinja_extensions.UrlForExtension]
-    )
-    env.install_gettext_callables(_, ungettext, newstyle=True)
-    # custom filters
-    env.filters['empty_and_escape'] = jinja_extensions.empty_and_escape
-    env.filters['truncate'] = jinja_extensions.truncate
-    config['pylons.app_globals'].jinja_env = env
 
     # CONFIGURATION OPTIONS HERE (note: all config options will override
     # any Pylons config options)
@@ -401,10 +274,6 @@ def update_config():
 
     for plugin in p.PluginImplementations(p.IConfigurable):
         plugin.configure(config)
-
-    # reset the template cache - we do this here so that when we load the
-    # environment it is clean
-    render.reset_template_info_cache()
 
     # clear other caches
     logic.clear_actions_cache()

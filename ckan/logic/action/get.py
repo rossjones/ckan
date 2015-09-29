@@ -22,7 +22,6 @@ import ckan.plugins as plugins
 import ckan.lib.search as search
 import ckan.lib.plugins as lib_plugins
 import ckan.lib.activity_streams as activity_streams
-import ckan.lib.datapreview as datapreview
 import ckan.authz as authz
 
 from ckan.common import _
@@ -1126,31 +1125,6 @@ def resource_view_show(context, data_dict):
     _check_access('resource_view_show', context, data_dict)
     return model_dictize.resource_view_dictize(resource_view, context)
 
-
-def resource_view_list(context, data_dict):
-    '''
-    Return the list of resource views for a particular resource.
-
-    :param id: the id of the resource
-    :type id: string
-
-    :rtype: list of dictionaries.
-    '''
-    model = context['model']
-    id = _get_or_bust(data_dict, 'id')
-    resource = model.Resource.get(id)
-    if not resource:
-        raise NotFound
-    context['resource'] = resource
-    _check_access('resource_view_list', context, data_dict)
-    q = model.Session.query(model.ResourceView).filter_by(resource_id=id)
-    ## only show views when there is the correct plugin enabled
-    resource_views = [
-        resource_view for resource_view
-        in q.order_by(model.ResourceView.order).all()
-        if datapreview.get_view_plugin(resource_view.view_type)
-    ]
-    return model_dictize.resource_view_list_dictize(resource_views, context)
 
 def resource_status_show(context, data_dict):
     '''Return the statuses of a resource's tasks.

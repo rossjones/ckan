@@ -30,15 +30,12 @@ from pylons.decorators.cache import beaker_cache
 from pylons import config
 from routes import redirect_to as _redirect_to
 from routes import url_for as _routes_default_url_for
-from alphabet_paginate import AlphaPage
 import i18n
 import ckan.exceptions
 
-import ckan.lib.fanstatic_resources as fanstatic_resources
 import ckan.model as model
 import ckan.lib.formatters as formatters
 import ckan.lib.maintain as maintain
-import ckan.lib.datapreview as datapreview
 import ckan.logic as logic
 import ckan.lib.uploader as uploader
 import ckan.authz as authz
@@ -1379,40 +1376,6 @@ def remove_url_param(key, value=None, replace=None, controller=None,
                                    action=action, extras=extras)
 
 
-def include_resource(resource):
-    r = getattr(fanstatic_resources, resource)
-    r.need()
-
-
-def urls_for_resource(resource):
-    ''' Returns a list of urls for the resource specified.  If the resource
-    is a group or has dependencies then there can be multiple urls.
-
-    NOTE: This is for special situations only and is not the way to generally
-    include resources.  It is advised not to use this function.'''
-    r = getattr(fanstatic_resources, resource)
-    resources = list(r.resources)
-    core = fanstatic_resources.fanstatic_extensions.core
-    f = core.get_needed()
-    lib = r.library
-    root_path = f.library_url(lib)
-
-    resources = core.sort_resources(resources)
-    if f._bundle:
-        resources = core.bundle_resources(resources)
-    out = []
-    for resource in resources:
-        if isinstance(resource, core.Bundle):
-            paths = [resource.relpath for resource in resource.resources()]
-            relpath = ';'.join(paths)
-            relpath = core.BUNDLE_PREFIX + relpath
-        else:
-            relpath = resource.relpath
-
-        out.append('%s/%s' % (root_path, relpath))
-    return out
-
-
 def debug_inspect(arg):
     ''' Output pprint.pformat view of supplied arg '''
     return literal('<pre>') + pprint.pformat(arg) + literal('</pre>')
@@ -1705,83 +1668,12 @@ def format_resource_items(items):
     return sorted(output, key=lambda x: x[0])
 
 
-def resource_preview(resource, package):
-    '''
-    Returns a rendered snippet for a embedded resource preview.
-
-    Depending on the type, different previews are loaded.
-    This could be an img tag where the image is loaded directly or an iframe
-    that embeds a web page or a recline preview.
-    '''
-
-    if not resource['url']:
-        return False
-
-    format_lower = datapreview.res_format(resource)
-    directly = False
-    data_dict = {'resource': resource, 'package': package}
-
-    if datapreview.get_preview_plugin(data_dict, return_first=True):
-        url = url_for(controller='package', action='resource_datapreview',
-                      resource_id=resource['id'], id=package['id'], qualified=True)
-    else:
-        return False
-
-    return snippet("dataviewer/snippets/data_preview.html",
-                   embed=directly,
-                   resource_url=url,
-                   raw_resource_url=resource.get('url'))
-
-
-def get_allowed_view_types(resource, package):
-    data_dict = {'resource': resource, 'package': package}
-    plugins = datapreview.get_allowed_view_plugins(data_dict)
-
-    allowed_view_types = []
-    for plugin in plugins:
-        info = plugin.info()
-        allowed_view_types.append((info['name'],
-                                   info.get('title', info['name']),
-                                   info.get('icon', 'image')))
-    allowed_view_types.sort(key=lambda item: item[1])
-    return allowed_view_types
-
-
-def rendered_resource_view(resource_view, resource, package, embed=False):
-    '''
-    Returns a rendered resource view snippet.
-    '''
-    view_plugin = datapreview.get_view_plugin(resource_view['view_type'])
-    context = {}
-    data_dict = {'resource_view': resource_view,
-                 'resource': resource,
-                 'package': package}
-    vars = view_plugin.setup_template_variables(context, data_dict) or {}
-    template = view_plugin.view_template(context, data_dict)
-    data_dict.update(vars)
-
-    if not resource_view_is_iframed(resource_view) and embed:
-        template = "package/snippets/resource_view_embed.html"
-
-    import ckan.lib.base as base
-    return literal(base.render(template, extra_vars=data_dict))
-
-
 def view_resource_url(resource_view, resource, package, **kw):
     '''
     Returns url for resource. made to be overridden by extensions. i.e
     by resource proxy.
     '''
     return resource['url']
-
-
-def resource_view_is_filterable(resource_view):
-    '''
-    Returns True if the given resource view support filters.
-    '''
-    view_plugin = datapreview.get_view_plugin(resource_view['view_type'])
-    return view_plugin.info().get('filterable', False)
-
 
 def resource_view_get_fields(resource):
     '''Returns sorted list of text and time fields of a datastore resource.'''
@@ -1798,39 +1690,6 @@ def resource_view_get_fields(resource):
     fields = [field['id'] for field in result.get('fields', [])]
 
     return sorted(fields)
-
-
-def resource_view_is_iframed(resource_view):
-    '''
-    Returns true if the given resource view should be displayed in an iframe.
-    '''
-    view_plugin = datapreview.get_view_plugin(resource_view['view_type'])
-    return view_plugin.info().get('iframed', True)
-
-
-def resource_view_icon(resource_view):
-    '''
-    Returns the icon for a particular view type.
-    '''
-    view_plugin = datapreview.get_view_plugin(resource_view['view_type'])
-    return view_plugin.info().get('icon', 'picture')
-
-
-def resource_view_display_preview(resource_view):
-    '''
-    Returns if the view should display a preview.
-    '''
-    view_plugin = datapreview.get_view_plugin(resource_view['view_type'])
-    return view_plugin.info().get('preview_enabled', True)
-
-
-def resource_view_full_page(resource_view):
-    '''
-    Returns if the edit view page should be full page.
-    '''
-    view_plugin = datapreview.get_view_plugin(resource_view['view_type'])
-    return view_plugin.info().get('full_page_edit', False)
-
 
 def remove_linebreaks(string):
     '''Remove linebreaks from string to make it usable in JavaScript'''
@@ -2101,8 +1960,6 @@ __allowed_functions__ = [
     'lang_native_name',
     'get_facet_items_dict',
     'unselected_facet_items',
-    'include_resource',
-    'urls_for_resource',
     'build_nav_main',
     'build_nav_icon',
     'build_nav',
@@ -2129,14 +1986,6 @@ __allowed_functions__ = [
     'get_request_param',
     'render_markdown',
     'format_resource_items',
-    'resource_preview',
-    'rendered_resource_view',
-    'resource_view_get_fields',
-    'resource_view_is_filterable',
-    'resource_view_is_iframed',
-    'resource_view_icon',
-    'resource_view_display_preview',
-    'resource_view_full_page',
     'remove_linebreaks',
     'SI_number_span',
     'localised_number',
@@ -2163,7 +2012,6 @@ __allowed_functions__ = [
     'get_featured_organizations',
     'get_featured_groups',
     'get_site_statistics',
-    'get_allowed_view_types',
     'urlencode',
     'check_config_permission',
     'view_resource_url',

@@ -20,7 +20,6 @@ import ckan.lib.plugins as lib_plugins
 import ckan.lib.email_notifications as email_notifications
 import ckan.lib.search as search
 import ckan.lib.uploader as uploader
-import ckan.lib.datapreview
 import ckan.lib.app_globals as app_globals
 
 
@@ -170,95 +169,6 @@ def resource_update(context, data_dict):
         plugin.after_update(context, resource)
 
     return resource
-
-
-def resource_view_update(context, data_dict):
-    '''Update a resource view.
-
-    To update a resource_view you must be authorized to update the resource
-    that the resource_view belongs to.
-
-    For further parameters see ``resource_view_create()``.
-
-    :param id: the id of the resource_view to update
-    :type id: string
-
-    :returns: the updated resource_view
-    :rtype: string
-
-    '''
-    model = context['model']
-    id = _get_or_bust(data_dict, "id")
-
-    resource_view = model.ResourceView.get(id)
-    if not resource_view:
-        raise NotFound
-
-    view_plugin = ckan.lib.datapreview.get_view_plugin(resource_view.view_type)
-    schema = (context.get('schema') or
-              schema_.default_update_resource_view_schema(view_plugin))
-    plugin_schema = view_plugin.info().get('schema', {})
-    schema.update(plugin_schema)
-
-    data, errors = _validate(data_dict, schema, context)
-    if errors:
-        model.Session.rollback()
-        raise ValidationError(errors)
-
-    context['resource_view'] = resource_view
-    context['resource'] = model.Resource.get(resource_view.resource_id)
-
-    _check_access('resource_view_update', context, data_dict)
-
-    if context.get('preview'):
-        return data
-
-    resource_view = model_save.resource_view_dict_save(data, context)
-    if not context.get('defer_commit'):
-        model.repo.commit()
-    return model_dictize.resource_view_dictize(resource_view, context)
-
-def resource_view_reorder(context, data_dict):
-    '''Reorder resource views.
-
-    :param id: the id of the resource
-    :type id: string
-    :param order: the list of id of the resource to update the order of the views
-    :type order: list of strings
-
-    :returns: the updated order of the view
-    :rtype: dictionary
-    '''
-    model = context['model']
-    id, order = _get_or_bust(data_dict, ["id", "order"])
-    if not isinstance(order, list):
-        raise ValidationError({"order": "Must supply order as a list"})
-    if len(order) != len(set(order)):
-        raise ValidationError({"order": "No duplicates allowed in order"})
-    resource = model.Resource.get(id)
-    context['resource'] = resource
-
-    _check_access('resource_view_reorder', context, data_dict)
-
-    q = model.Session.query(model.ResourceView.id).filter_by(resource_id=id)
-    existing_views = [res[0] for res in
-                      q.order_by(model.ResourceView.order).all()]
-    ordered_views = []
-    for view in order:
-        try:
-            existing_views.remove(view)
-            ordered_views.append(view)
-        except ValueError:
-            raise ValidationError(
-                {"order": "View {view} does not exist".format(view=view)}
-            )
-    new_order = ordered_views + existing_views
-
-    for num, view in enumerate(new_order):
-        model.Session.query(model.ResourceView).\
-            filter_by(id=view).update({"order": num + 1})
-    model.Session.commit()
-    return {'id': id, 'order': new_order}
 
 
 def package_update(context, data_dict):

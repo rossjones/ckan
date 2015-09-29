@@ -15,7 +15,6 @@ TEST_VOCAB_NAME = 'test-vocab'
 
 class MockVocabTagsPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IDatasetForm, inherit=True)
-    plugins.implements(plugins.IGenshiStreamFilter)
 
     def is_fallback(self):
         return False

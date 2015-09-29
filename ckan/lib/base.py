@@ -20,7 +20,6 @@ from webhelpers.html import literal
 import ckan.exceptions
 import ckan
 import ckan.lib.i18n as i18n
-import ckan.lib.render as render_
 import ckan.lib.helpers as h
 import ckan.lib.app_globals as app_globals
 import ckan.plugins as p
@@ -66,36 +65,6 @@ def abort(status_code=None, detail='', headers=None, comment=None):
                   detail=detail,
                   headers=headers,
                   comment=comment)
-
-
-def render_snippet(template_name, **kw):
-    ''' Helper function for rendering snippets. Rendered html has
-    comment tags added to show the template used. NOTE: unlike other
-    render functions this takes a list of keywords instead of a dict for
-    the extra template variables. '''
-    # allow cache_force to be set in render function
-    cache_force = kw.pop('cache_force', None)
-    output = render(template_name, extra_vars=kw, cache_force=cache_force,
-                    renderer='snippet')
-    output = '\n<!-- Snippet %s start -->\n%s\n<!-- Snippet %s end -->\n' % (
-        template_name, output, template_name)
-    return literal(output)
-
-
-def render_text(template_name, extra_vars=None, cache_force=None):
-    '''Render a Genshi :py:class:`NewTextTemplate`.
-
-    This is just a wrapper function that lets you render a Genshi
-    :py:class:`NewTextTemplate` without having to pass ``method='text'`` or
-    ``loader_class=NewTextTemplate`` (it passes them to
-    :py:func:`~ckan.plugins.toolkit.render` for you).
-
-    '''
-    return render(template_name,
-                  extra_vars=extra_vars,
-                  cache_force=cache_force,
-                  method='text',
-                  loader_class=NewTextTemplate)
 
 
 def render_jinja2(template_name, extra_vars):
@@ -159,9 +128,6 @@ def render(template_name, extra_vars=None, cache_key=None, cache_type=None,
             template_name.encode('utf-8'), cls=loader_class
         )
         stream = template.generate(**globs)
-
-        for item in p.PluginImplementations(p.IGenshiStreamFilter):
-            stream = item.filter(stream)
 
         if loader_class == NewTextTemplate:
             return literal(stream.render(method="text", encoding=None))

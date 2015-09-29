@@ -67,6 +67,7 @@ def make_app(conf, full_stack=True, static_files=True, **app_conf):
 
     # Routing/Session/Cache Middleware
     app = RoutesMiddleware(app, config['routes.map'])
+
     # we want to be able to retrieve the routes middleware to be able to update
     # the mapper.  We store it in the pylons config to allow this.
     config['routes.middleware'] = app
@@ -78,24 +79,6 @@ def make_app(conf, full_stack=True, static_files=True, **app_conf):
     if asbool(config.get('ckan.use_pylons_response_cleanup_middleware', True)):
         app = execute_on_completion(app, config, cleanup_pylons_response_string)
 
-    # Fanstatic
-    if asbool(config.get('debug', False)):
-        fanstatic_config = {
-            'versioning': True,
-            'recompute_hashes': True,
-            'minified': False,
-            'bottom': True,
-            'bundle': False,
-        }
-    else:
-        fanstatic_config = {
-            'versioning': True,
-            'recompute_hashes': False,
-            'minified': True,
-            'bottom': True,
-            'bundle': True,
-        }
-    app = Fanstatic(app, **fanstatic_config)
 
     for plugin in PluginImplementations(IMiddleware):
         try:
@@ -136,38 +119,6 @@ def make_app(conf, full_stack=True, static_files=True, **app_conf):
     app = RegistryManager(app)
 
     app = I18nMiddleware(app, config)
-
-    if asbool(static_files):
-        # Serve static files
-        static_max_age = None if not asbool(config.get('ckan.cache_enabled')) \
-            else int(config.get('ckan.static_max_age', 3600))
-
-        static_app = StaticURLParser(config['pylons.paths']['static_files'],
-                                     cache_max_age=static_max_age)
-        static_parsers = [static_app, app]
-
-        storage_directory = uploader.get_storage_path()
-        if storage_directory:
-            path = os.path.join(storage_directory, 'storage')
-            try:
-                os.makedirs(path)
-            except OSError, e:
-                ## errno 17 is file already exists
-                if e.errno != 17:
-                    raise
-
-            storage_app = StaticURLParser(path, cache_max_age=static_max_age)
-            static_parsers.insert(0, storage_app)
-
-        # Configurable extra static file paths
-        extra_static_parsers = []
-        for public_path in config.get('extra_public_paths', '').split(','):
-            if public_path.strip():
-                extra_static_parsers.append(
-                    StaticURLParser(public_path.strip(),
-                                    cache_max_age=static_max_age)
-                )
-        app = Cascade(extra_static_parsers + static_parsers)
 
     # Page cache
     if asbool(config.get('ckan.page_cache_enabled')):
