@@ -368,8 +368,6 @@ content type, cookies, etc.
     def __getattr__(self, name):
         ''' return the function/object requested '''
         if not self._toolkit:
-            print "INITIALISING!!!"
-
             self._initialize()
         if name in self._toolkit:
             return self._toolkit[name]
