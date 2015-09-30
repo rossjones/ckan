@@ -78,14 +78,12 @@ ckan.auth.roles_that_cascade_to_sub_groups = admin
 ckan.site_id = default
 #solr_url = http://127.0.0.1:8983/solr
 
-#ckan.simple_search = 1
-
 
 ## CORS Settings
 
 # If cors.origin_allow_all is true, all origins are allowed.
 # If false, the cors.origin_whitelist is used.
-# ckan.cors.origin_allow_all = true
+ckan.cors.origin_allow_all = true
 # cors.origin_whitelist is a space separated list of allowed domains.
 # ckan.cors.origin_whitelist = http://example1.com http://example2.com
 
@@ -96,12 +94,7 @@ ckan.site_id = default
 #       Add ``datapusher`` to enable DataPusher
 #		Add ``resource_proxy`` to enable resorce proxying and get around the
 #		same origin policy
-ckan.plugins = stats text_view image_view recline_view
-
-# Define which views should be created by default
-# (plugins must be loaded in ckan.plugins)
-ckan.views.default_views = image_view text_view recline_view
-
+ckan.plugins =
 
 ## Front-End Settings
 ckan.site_title = CKAN
@@ -113,14 +106,7 @@ ckan.preview.direct = png jpg gif
 ckan.preview.loadable = html htm rdf+xml owl+xml xml n3 n-triples turtle plain atom csv tsv rss txt json
 
 # package_hide_extras = for_search_index_only
-#package_edit_return_url = http://another.frontend/dataset/<NAME>
-#package_new_return_url = http://another.frontend/dataset/<NAME>
-#ckan.recaptcha.version = 1
-#ckan.recaptcha.publickey =
-#ckan.recaptcha.privatekey =
 #licenses_group_url = http://licenses.opendefinition.org/licenses/groups/ckan.json
-# ckan.template_footer_end =
-
 
 ## Internationalisation Settings
 ckan.locale_default = en

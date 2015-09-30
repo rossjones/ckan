@@ -270,11 +270,6 @@ class DatastorePlugin(p.SingletonPlugin):
     def before_show(self, resource_dict):
         # Modify the resource url of datastore resources so that
         # they link to the datastore dumps.
-        if resource_dict.get('url_type') == 'datastore':
-            resource_dict['url'] = p.toolkit.url_for(
-                controller='ckanext.datastore.controller:DatastoreController',
-                action='dump', resource_id=resource_dict['id'])
-
         connection = None
 
         resource_dict['datastore_active'] = False
