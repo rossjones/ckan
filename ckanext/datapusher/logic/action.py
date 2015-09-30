@@ -157,22 +157,6 @@ def datapusher_hook(context, data_dict):
 
     task['state'] = status
     task['last_updated'] = str(datetime.datetime.now())
-    if status == 'complete':
-        # Create default views for resource if necessary (only the ones that
-        # require data to be in the DataStore)
-        resource_dict = p.toolkit.get_action('resource_show')(
-            context, {'id': res_id})
-
-        dataset_dict = p.toolkit.get_action('package_show')(
-            context, {'id': resource_dict['package_id']})
-
-        logic.get_action('resource_create_default_resource_views')(
-            context,
-            {
-                'resource': resource_dict,
-                'package': dataset_dict,
-                'create_datastore_views': True,
-            })
 
     context['ignore_auth'] = True
     p.toolkit.get_action('task_status_update')(context, task)
