@@ -90,9 +90,7 @@ class User(vdm.sqlalchemy.StatefulObjectMixin,
         '''Returns a reference (e.g. name, id, openid) for this user
         suitable for the user\'s URI.
         When there is a choice, the most preferable one will be
-        given, based on readability. This is expected when repoze.who can
-        give a more friendly name for an openid user.
-        The result is not escaped (will get done in url_for/redirect_to).
+        given, based on readability.
         '''
         if self.name:
             ref = self.name

@@ -257,42 +257,12 @@ class BaseController(WSGIController):
 
     def _identify_user_default(self):
         '''
-        Identifies the user using two methods:
-        a) If they logged into the web interface then repoze.who will
-           set REMOTE_USER.
-        b) For API calls they may set a header with an API key.
+        Identifies the user using one method:
+            For API calls they may set a header with an API key.
         '''
-
-        # environ['REMOTE_USER'] is set by repoze.who if it authenticates a
-        # user's cookie. But repoze.who doesn't check the user (still) exists
-        # in our database - we need to do that here. (Another way would be
-        # with an userid_checker, but that would mean another db access.
-        # See: http://docs.repoze.org/who/1.0/narr.html#module-repoze.who\
-        # .plugins.sql )
-        c.user = request.environ.get('REMOTE_USER', '')
-        if c.user:
-            c.user = c.user.decode('utf8')
-            c.userobj = model.User.by_name(c.user)
-            if c.userobj is None or not c.userobj.is_active():
-                # This occurs when a user that was still logged in is deleted,
-                # or when you are logged in, clean db
-                # and then restart (or when you change your username)
-                # There is no user object, so even though repoze thinks you
-                # are logged in and your cookie has ckan_display_name, we
-                # need to force user to logout and login again to get the
-                # User object.
-                session['lang'] = request.environ.get('CKAN_LANG')
-                session.save()
-
-                ev = request.environ
-                if 'repoze.who.plugins' in ev:
-                    pth = getattr(ev['repoze.who.plugins']['friendlyform'],
-                                  'logout_handler_path')
-                    h.redirect_to(pth)
-        else:
-            c.userobj = self._get_user_for_apikey()
-            if c.userobj is not None:
-                c.user = c.userobj.name
+        c.userobj = self._get_user_for_apikey()
+        if c.userobj is not None:
+            c.user = c.userobj.name
 
     def __call__(self, environ, start_response):
         """Invoke the Controller"""
@@ -304,31 +274,6 @@ class BaseController(WSGIController):
             res = WSGIController.__call__(self, environ, start_response)
         finally:
             model.Session.remove()
-
-        for cookie in request.cookies:
-            # Remove the ckan session cookie if not used e.g. logged out
-            if cookie == 'ckan' and not c.user:
-                # Check session for valid data (including flash messages)
-                # (DGU also uses session for a shopping basket-type behaviour)
-                is_valid_cookie_data = False
-                for key, value in session.items():
-                    if not key.startswith('_') and value:
-                        is_valid_cookie_data = True
-                        break
-                if not is_valid_cookie_data:
-                    if session.id:
-                        if not session.get('lang'):
-                            self.log.debug('No session data any more - '
-                                           'deleting session')
-                            self.log.debug('Session: %r', session.items())
-                            session.delete()
-                    else:
-                        response.delete_cookie(cookie)
-                        self.log.debug('No session data any more - '
-                                       'deleting session cookie')
-            # Remove auth_tkt repoze.who cookie if user not logged in.
-            elif cookie == 'auth_tkt' and not session.id:
-                response.delete_cookie(cookie)
 
         return res
 

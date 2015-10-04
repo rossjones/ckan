@@ -16,8 +16,6 @@ from pylons import config
 from pylons.middleware import ErrorHandler, StatusCodeRedirect
 from pylons.wsgiapp import PylonsApp
 from routes.middleware import RoutesMiddleware
-from repoze.who.config import WhoConfig
-from repoze.who.middleware import PluggableAuthenticationMiddleware
 from fanstatic import Fanstatic
 
 from ckan.plugins import PluginImplementations
@@ -79,7 +77,6 @@ def make_app(conf, full_stack=True, static_files=True, **app_conf):
     if asbool(config.get('ckan.use_pylons_response_cleanup_middleware', True)):
         app = execute_on_completion(app, config, cleanup_pylons_response_string)
 
-
     for plugin in PluginImplementations(IMiddleware):
         try:
             app = plugin.make_error_log_middleware(app, config)
@@ -97,23 +94,6 @@ def make_app(conf, full_stack=True, static_files=True, **app_conf):
             app = StatusCodeRedirect(app, [400, 404])
         else:
             app = StatusCodeRedirect(app, [400, 404, 500])
-
-    # Initialize repoze.who
-    who_parser = WhoConfig(conf['here'])
-    who_parser.parse(open(app_conf['who.config_file']))
-
-    app = PluggableAuthenticationMiddleware(
-        app,
-        who_parser.identifiers,
-        who_parser.authenticators,
-        who_parser.challengers,
-        who_parser.mdproviders,
-        who_parser.request_classifier,
-        who_parser.challenge_decider,
-        logging.getLogger('repoze.who'),
-        logging.WARN,  # ignored
-        who_parser.remote_user_key
-    )
 
     # Establish the Registry for this application
     app = RegistryManager(app)
@@ -206,14 +186,6 @@ class PageCacheMiddleware(object):
         # REMOTE_USER is used by some tests.
         if environ['REQUEST_METHOD'] != 'GET' or environ.get('REMOTE_USER'):
             return self.app(environ, start_response)
-
-        # If there is a ckan cookie (or auth_tkt) we avoid the cache.
-        # We want to allow other cookies like google analytics ones :(
-        cookie_string = environ.get('HTTP_COOKIE')
-        if cookie_string:
-            for cookie in cookie_string.split(';'):
-                if cookie.startswith('ckan') or cookie.startswith('auth_tkt'):
-                    return self.app(environ, start_response)
 
         # Make our cache key
         key = 'page:%s?%s' % (environ['PATH_INFO'], environ['QUERY_STRING'])

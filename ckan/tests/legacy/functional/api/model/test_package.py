@@ -1,6 +1,7 @@
 import copy
 
 from nose.tools import assert_equal, assert_raises
+from nose.plugins.skip import SkipTest
 
 from ckan.lib.create_test_data import CreateTestData
 import ckan.lib.search as search
@@ -316,6 +317,8 @@ class PackagesTestCase(BaseModelApiTestCase):
         assert_equal(data['license_id'], data_returned['license_id'])
 
     def test_entity_get_then_post_new(self):
+        raise SkipTest("Relies on cookies to work")
+
         offset = self.package_offset(self.war.name)
         res = self.app.get(offset, status=self.STATUS_200_OK)
         data = self.loads(res.body)

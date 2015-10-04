@@ -51,7 +51,6 @@ entry_points = {
     ],
     'ckan.plugins': [
         'synchronous_search = ckan.lib.search:SynchronousSearchPlugin',
-        'stats = ckanext.stats.plugin:StatsPlugin',
         'publisher_form = ckanext.publisher_form.forms:PublisherForm',
         'publisher_dataset_form = ckanext.publisher_form.forms:PublisherDatasetForm',
         'multilingual_dataset = ckanext.multilingual.plugin:MultilingualDataset',
@@ -99,7 +98,7 @@ setup(
     long_description=__long_description__,
     zip_safe=False,
     packages=find_packages(exclude=['ez_setup']),
-    namespace_packages=['ckanext', 'ckanext.stats'],
+    namespace_packages=['ckanext'],
     include_package_data=True,
     package_data={'ckan': [
         'i18n/*/LC_MESSAGES/*.mo',
@@ -111,23 +110,11 @@ setup(
     message_extractors={
         'ckan': [
             ('**.py', 'python', None),
-            ('**.js', 'javascript', None),
-            ('templates/importer/**', 'ignore', None),
-            ('templates/**.html', 'ckan', None),
-            ('templates_legacy/**.html', 'ckan', None),
-            ('ckan/templates/home/language.js', 'genshi', {
-                'template_class': 'genshi.template:TextTemplate'
-            }),
-            ('public/**', 'ignore', None),
         ],
         'ckanext': [
             ('**.py', 'python', None),
-            ('**.html', 'ckan', None),
             ('multilingual/solr/*.txt', 'ignore', None),
         ]
     },
     entry_points=entry_points,
-    # setup.py test command needs a TestSuite so does not work with py.test
-    # test_suite = 'nose.collector',
-    # tests_require=[ 'py >= 0.8.0-alpha2' ]
 )
