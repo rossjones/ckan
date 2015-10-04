@@ -7,7 +7,6 @@ import hashlib
 import os
 
 import sqlalchemy as sa
-from beaker.middleware import CacheMiddleware, SessionMiddleware
 from paste.cascade import Cascade
 from paste.registry import RegistryManager
 from paste.urlparser import StaticURLParser
@@ -63,14 +62,11 @@ def make_app(conf, full_stack=True, static_files=True, **app_conf):
     for plugin in PluginImplementations(IMiddleware):
         app = plugin.make_middleware(app, config)
 
-    # Routing/Session/Cache Middleware
-    app = RoutesMiddleware(app, config['routes.map'])
-
+    # Routing Middleware
     # we want to be able to retrieve the routes middleware to be able to update
     # the mapper.  We store it in the pylons config to allow this.
+    app = RoutesMiddleware(app, config['routes.map'])
     config['routes.middleware'] = app
-    app = SessionMiddleware(app, config)
-    app = CacheMiddleware(app, config)
 
     # CUSTOM MIDDLEWARE HERE (filtered by error handling middlewares)
     #app = QueueLogMiddleware(app)

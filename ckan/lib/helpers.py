@@ -26,7 +26,6 @@ from webhelpers import paginate
 from webhelpers.text import truncate
 import webhelpers.date as date
 from pylons import url as _pylons_default_url
-from pylons.decorators.cache import beaker_cache
 from pylons import config
 from routes import redirect_to as _redirect_to
 from routes import url_for as _routes_default_url_for
@@ -41,7 +40,7 @@ import ckan.lib.uploader as uploader
 import ckan.authz as authz
 
 from ckan.common import (
-    _, ungettext, g, c, request, session, json, OrderedDict
+    _, ungettext, g, c, request, json, OrderedDict
 )
 
 get_available_locales = i18n.get_available_locales

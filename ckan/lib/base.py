@@ -6,7 +6,7 @@ import logging
 import time
 
 from paste.deploy.converters import asbool
-from pylons import cache, config, session
+from pylons import cache, config
 from pylons.controllers import WSGIController
 from pylons.controllers.util import abort as _abort
 from pylons.controllers.util import redirect_to, redirect
@@ -143,12 +143,6 @@ def render(template_name, extra_vars=None, cache_key=None, cache_type=None,
     # Force cache or not if explicit.
     if cache_force is not None:
         allow_cache = cache_force
-    # Do not allow caching of pages for logged in users/flash messages etc.
-    elif session.last_accessed:
-        allow_cache = False
-    # Tests etc.
-    elif 'REMOTE_USER' in request.environ:
-        allow_cache = False
     # Don't cache if based on a non-cachable template used in this.
     elif request.environ.get('__no_cache__'):
         allow_cache = False

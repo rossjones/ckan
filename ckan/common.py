@@ -8,7 +8,7 @@
 
 
 from pylons.i18n import _, ungettext
-from pylons import g, c, request, session, response
+from pylons import g, c, request, response
 import simplejson as json
 
 try:

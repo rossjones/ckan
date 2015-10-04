@@ -3,7 +3,6 @@
 
 Babel>=0.9.6,<1.0.0  # newer versions cause problems with when switching languages
 Pylons==0.9.7
-Beaker==1.7.0 # need to pin this because of https://github.com/bbangert/beaker/commit/fc511ceda4305fcf54919b3f081fed7790e2fef3
 WebTest==1.4.3  # need to pin this so that Pylons does not install a newer version that conflicts with WebOb==1.0.8
 ofs==0.4.1
 Pairtree==0.7.1-T

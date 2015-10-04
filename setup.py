@@ -68,7 +68,6 @@ entry_points = {
     'ckan.test_plugins': [
         'routes_plugin = tests.legacy.ckantestplugins:RoutesPlugin',
         'mapper_plugin = tests.legacy.ckantestplugins:MapperPlugin',
-        'session_plugin = tests.legacy.ckantestplugins:SessionPlugin',
         'mapper_plugin2 = tests.legacy.ckantestplugins:MapperPlugin2',
         'authorizer_plugin = tests.legacy.ckantestplugins:AuthorizerPlugin',
         'test_observer_plugin = tests.legacy.ckantestplugins:PluginObserverPlugin',
