@@ -38,6 +38,30 @@ NotFound = logic.NotFound
 _get_or_bust = logic.get_or_bust
 
 
+def user_authenticate(context, data_dict):
+    '''Authenticates a user
+
+    The username and password must be given so that the API key (and other
+    details can be shown).
+
+    :param id: the id or name of the user
+    :type id: string
+    :param id: the password for the user
+    :type id: string
+
+    :rtype: dictionary
+    '''
+    # User username and password to authenticate the user and then
+    # return the username and APIKey.
+    user = context['model'].User.get(data_dict['username'])
+    if not user:
+        raise NotFound
+    if not user.validate_password(data_dict['password']):
+        raise NotFound
+    return {"success": True, "username": user.name, "apikey": user.apikey}
+
+
+
 def package_create(context, data_dict):
     '''Create a new dataset (package).
 
